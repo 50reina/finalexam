@@ -6,19 +6,30 @@
 */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Array of colors for background change
-    const colors = ['#F0E68C', '#FFDAB9', '#FFE4B5', '#D8BFD8', '#B0E0E6', '#AFEEEE', '#E0FFFF', '#98FB98', '#FFDEAD', '#F5DEB3'];
+  // Array of colors for background change
+  const colors = [
+    "#F0E68C",
+    "#FFDAB9",
+    "#FFE4B5",
+    "#D8BFD8",
+    "#B0E0E6",
+    "#AFEEEE",
+    "#E0FFFF",
+    "#98FB98",
+    "#FFDEAD",
+    "#F5DEB3",
+  ];
 
-    let index = 0;
+  let index = 0;
 
-    // Function to change background color with a gradient effect
-    const changeBackgroundColor = () => {
-        document.body.style.backgroundColor = colors[index];
-        index = (index + 1) % colors.length; // Loop back to the start
-    };
+  // Function to change background color with a gradient effect
+  const changeBackgroundColor = () => {
+    document.body.style.backgroundColor = colors[index];
+    index = (index + 1) % colors.length; // Loop back to the start
+  };
 
-    // Change color every 2 seconds with a smooth transition
-    setInterval(changeBackgroundColor, 2000);
+  // Change color every 2 seconds with a smooth transition
+  setInterval(changeBackgroundColor, 2000);
 });
 
 let enterButton = document.getElementById("enter");
@@ -27,53 +38,90 @@ let ul = document.querySelector("ul");
 let item = document.getElementsByTagName("li");
 
 function inputLength() {
-    return input.value.length;
+  return input.value.length;
 }
 
 function listLength() {
-    return item.length;
+  return item.length;
 }
 
 function createListElement() {
-    let li = document.createElement("li"); // creates an element "li"
-    li.appendChild(document.createTextNode(input.value)); //makes text from input field the li text
-    ul.appendChild(li); //adds li to ul
-    input.value = ""; //Reset text input field
+  if (taskExists(input.value)) {
+    alert("This task already exists. Please enter a new task.");
+    return;
+  }
+  let li = document.createElement("li"); // creates an element "li"
+  li.appendChild(document.createTextNode(input.value)); //makes text from input field the li text
+  ul.appendChild(li); //adds li to ul
+  input.value = ""; //Reset text input field
 
+  //START STRIKETHROUGH
+  // because it's in the function, it only adds it for new items
+  function crossOut() {
+    li.classList.toggle("done");
+  }
 
-    //START STRIKETHROUGH
-    // because it's in the function, it only adds it for new items
-    function crossOut() {
-        li.classList.toggle("done");
-    }
+  li.addEventListener("click", crossOut);
+  //END STRIKETHROUGH
 
-    li.addEventListener("click", crossOut);
-    //END STRIKETHROUGH
-
-
-    // START ADD DELETE BUTTON
-    let dBtn = document.createElement("button");
-    dBtn.appendChild(document.createTextNode("X"));
-    li.appendChild(dBtn);
-
+  // START ADD DELETE BUTTON
+  let dBtn = document.createElement("button");
+  dBtn.appendChild(document.createTextNode("X"));
+  li.appendChild(dBtn);
 }
 
-
 function addListAfterClick() {
-    if (inputLength() > 0) { //makes sure that an empty input field doesn't create a li
-        createListElement();
-    }
+  if (inputLength() > 0) {
+    //makes sure that an empty input field doesn't create a li
+    createListElement();
+  }
 }
 
 function addListAfterKeypress(event) {
-    if (inputLength() > 0 && event.which === 13) { //this now looks to see if you hit "enter"/"return"
-        //the 13 is the enter key's keycode, this could also be display by event.keyCode === 13
-        createListElement();
-    }
+  if (inputLength() > 0 && event.which === 13) {
+    //this now looks to see if you hit "enter"/"return"
+    //the 13 is the enter key's keycode, this could also be display by event.keyCode === 13
+    createListElement();
+  }
 }
-
 
 enterButton.addEventListener("click", addListAfterClick);
 
 input.addEventListener("keypress", addListAfterKeypress);
 
+document.getElementById("askUser").addEventListener("click", askUserForTasks);
+
+function askUserForTasks() {
+  while (true) {
+    let task = prompt("Enter a new task (or click Cancel to stop):");
+    if (task === null) break; // User clicked Cancel
+    if (task.trim() === "") continue; // Skip empty inputs
+
+    if (taskExists(task)) {
+      alert("This task already exists. Please enter a new task.");
+    } else {
+      addTask(task);
+    }
+  }
+}
+
+function taskExists(task) {
+  return Array.from(item).some((li) => li.textContent.includes(task));
+}
+
+function addTask(task) {
+  let li = document.createElement("li");
+  li.appendChild(document.createTextNode(task));
+  ul.appendChild(li);
+  addDeleteButton(li);
+}
+
+function addDeleteButton(li) {
+  let deleteButton = document.createElement("button");
+  deleteButton.appendChild(document.createTextNode("X"));
+  deleteButton.className = "delete";
+  deleteButton.onclick = function () {
+    li.remove();
+  };
+  li.appendChild(deleteButton);
+}
